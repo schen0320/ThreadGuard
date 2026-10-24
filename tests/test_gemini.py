@@ -1,5 +1,7 @@
 import json
+import io
 import tempfile
+import urllib.error
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -28,6 +30,33 @@ class Failing:
 
 
 class GeminiProviderTests(unittest.TestCase):
+    def test_http_diagnostics_are_allowlisted_and_no_retry(self):
+        body = {'error': {'status': 'INVALID_ARGUMENT', 'message': 'schema SECRET-MUST-NOT-LEAK',
+                         'details': [{'reason': 'API_KEY_INVALID', 'metadata': {'key': 'SECRET-MUST-NOT-LEAK'}},
+                                     {'reason': 'SECRET-MUST-NOT-LEAK'}]}}
+        error = urllib.error.HTTPError('https://fake/SECRET-MUST-NOT-LEAK', 400,
+                                       'SECRET-MUST-NOT-LEAK', {}, io.BytesIO(json.dumps(body).encode()))
+        provider = GeminiProvider('fake')
+        with patch('urllib.request.build_opener') as network:
+            network.return_value.open.side_effect = error
+            result = run(Post('hello'), provider, 'single')
+            self.assertEqual(network.return_value.open.call_count, 1)
+        self.assertEqual(result['status'], 'provider_error')
+        self.assertEqual(provider.diagnostics[0], {'kind': 'http_error', 'http_status': 400,
+            'api_status': 'INVALID_ARGUMENT', 'reasons': ['API_KEY_INVALID'],
+            'mentioned_request_fields': ['schema'], 'leaked_key_reported': False})
+        self.assertNotIn('SECRET-MUST-NOT-LEAK', json.dumps([result, provider.diagnostics]))
+
+    def test_malformed_http_diagnostic_never_exposes_body(self):
+        for body in (b'SECRET-MUST-NOT-LEAK', b'x' * 65_537, b'{"error":"SECRET-MUST-NOT-LEAK"}'):
+            error = urllib.error.HTTPError('fake', 403, 'SECRET', {}, io.BytesIO(body))
+            self.assertEqual(GeminiProvider.http_diagnostic(error), {'kind': 'http_error', 'http_status': 403})
+
+    def test_unknown_error_status_is_not_echoed(self):
+        body = {'error': {'status': 'SECRET', 'message': 'SECRET', 'details': [{'reason': 'SECRET'}]}}
+        error = urllib.error.HTTPError('fake', 400, 'SECRET', {}, io.BytesIO(json.dumps(body).encode()))
+        self.assertNotIn('SECRET', json.dumps(GeminiProvider.http_diagnostic(error)))
+
     def test_missing_key(self):
         with patch.dict('os.environ', {}, clear=True), self.assertRaises(ProviderError):
             GeminiProvider()
@@ -128,6 +157,17 @@ class GeminiProviderTests(unittest.TestCase):
 
 
 class GeminiEvaluationTests(unittest.TestCase):
+    def test_smoke_only_caps_at_two_and_does_not_evaluate_live_cases(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / 'smoke'
+            summary = execute(DATA, out, KeywordBaseline(), confirm_free_tier=True, smoke_only=True)
+            self.assertEqual(summary['api_attempts'], 2)
+            self.assertEqual(summary['api_attempt_cap'], 2)
+            self.assertTrue(summary['smoke_only'])
+            self.assertFalse((out / 'single.json').exists())
+            self.assertEqual(list(summary['metrics']), ['baseline'])
+            self.assertFalse(summary['live_api_response_verified'])
+
     def test_four_disjoint_batches_cover_dev_only(self):
         groups = [select_ids(DATA, b) for b in range(1, 5)]
         self.assertTrue(all(len(g) == 5 for g in groups))

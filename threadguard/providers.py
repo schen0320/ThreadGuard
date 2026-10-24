@@ -97,6 +97,39 @@ class GeminiProvider:
         if not self._key:
             raise ProviderError("Configure GEMINI_API_KEY securely; do not paste keys into chat.")
         self._last_started = None
+        self.diagnostics = []
+
+    @staticmethod
+    def http_diagnostic(error):
+        """Only fixed labels and numeric status escape; never error text or headers."""
+        result = {"kind": "http_error"}
+        if type(error.code) is int and 100 <= error.code <= 599:
+            result["http_status"] = error.code
+        try:
+            raw = error.read(65_537)
+            if len(raw) > 65_536:
+                return result
+            detail = json.loads(raw).get("error", {})
+            allowed_status = ("INVALID_ARGUMENT", "UNAUTHENTICATED", "PERMISSION_DENIED",
+                              "NOT_FOUND", "RESOURCE_EXHAUSTED", "INTERNAL", "UNAVAILABLE")
+            if detail.get("status") in allowed_status:
+                result["api_status"] = detail["status"]
+            allowed_reasons = ("API_KEY_INVALID", "API_KEY_EXPIRED", "API_KEY_SERVICE_BLOCKED",
+                               "API_KEY_HTTP_REFERRER_BLOCKED", "API_KEY_IP_ADDRESS_BLOCKED",
+                               "SERVICE_DISABLED", "BILLING_DISABLED", "RATE_LIMIT_EXCEEDED",
+                               "ACCESS_TOKEN_SCOPE_INSUFFICIENT", "IAM_PERMISSION_DENIED")
+            result["reasons"] = sorted({d.get("reason") for d in detail.get("details", [])
+                                         if isinstance(d, dict) and d.get("reason") in allowed_reasons})
+            message = detail.get("message", "")
+            if isinstance(message, str):
+                lowered = message.lower()
+                result["mentioned_request_fields"] = [field for field in
+                    ("responseFormat", "mimeType", "schema", "thinkingBudget", "maxOutputTokens")
+                    if field.lower() in lowered]
+                result["leaked_key_reported"] = "leaked" in lowered
+        except Exception:
+            pass
+        return result
 
     def request_body(self, post, stage):
         instruction = POLICY
@@ -161,7 +194,11 @@ class GeminiProvider:
                 if len(raw) > 1_000_000:
                     raise ProviderError("oversized response")
                 return self.parse(json.loads(raw))
+        except urllib.error.HTTPError as error:
+            self.diagnostics.append(self.http_diagnostic(error))
+            raise ProviderError("Gemini HTTP request failed; see allowlisted diagnostic codes") from None
         except Exception:
+            self.diagnostics.append({"kind": "transport_or_output_error"})
             raise ProviderError("Gemini request failed; check key access, model, quota and network privately") from None
 
 

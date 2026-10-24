@@ -14,6 +14,11 @@ on:
         options: ['1', '2', '3', '4']
         required: true
         default: '1'
+      smoke_only:
+        description: 'Run only the two-request smoke test, with no development evaluation'
+        type: boolean
+        required: true
+        default: false
 
 permissions:
   contents: read
@@ -40,7 +45,13 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           EVAL_BATCH: ${{ inputs.batch }}
-        run: python -m threadguard.gemini_eval --allow-api-calls --confirm-free-tier --batch "$EVAL_BATCH" --output-dir reports/local-gemini
+          SMOKE_ONLY: ${{ inputs.smoke_only }}
+        run: |
+          extra_args=()
+          if [ "$SMOKE_ONLY" = "true" ]; then
+            extra_args+=(--smoke-only)
+          fi
+          python -m threadguard.gemini_eval --allow-api-calls --confirm-free-tier --batch "$EVAL_BATCH" --output-dir reports/local-gemini "${extra_args[@]}"
       - name: Save reports, including partial failures
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

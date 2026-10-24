@@ -29,13 +29,14 @@ def select_ids(data, batch):
     return [c["id"] for c in cases[start:start + BATCH_SIZE]]
 
 
-def execute(data, output, provider, batch=1, *, confirm_free_tier=False):
+def execute(data, output, provider, batch=1, *, confirm_free_tier=False, smoke_only=False):
     if confirm_free_tier is not True:
         raise ValueError("Confirm that the key's project is Free Tier with billing disabled")
     ids = select_ids(data, batch)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
-    capped = CappedProvider(provider, MAX_CALLS)
+    call_cap = 2 if smoke_only else MAX_CALLS
+    capped = CappedProvider(provider, call_cap)
     started = datetime.now(timezone.utc).isoformat()
     baseline = evaluate(data, "dev", KeywordBaseline(), "single", case_ids=ids)
     save(output / "baseline.json", baseline)
@@ -45,7 +46,7 @@ def execute(data, output, provider, batch=1, *, confirm_free_tier=False):
     status = "complete"
     if smoke["status"] != "ok":
         status = "smoke_failed"
-    else:
+    elif not smoke_only:
         for mode in ("single", "two-pass"):
             report = evaluate(data, "dev", capped, mode, stop_on_error=True, case_ids=ids)
             report["latency_includes_rate_pacing"] = True
@@ -67,7 +68,9 @@ def execute(data, output, provider, batch=1, *, confirm_free_tier=False):
         "provider": provider.name, "model": provider.model,
         "generation_config": {"temperature": 0, "thinking_budget": 0, "max_output_tokens": 1200},
         "free_tier_confirmed_by_operator": True, "billing_tier_verified_by_code": False,
-        "api_attempts": capped.calls, "api_attempt_cap": MAX_CALLS,
+        "api_attempts": capped.calls, "api_attempt_cap": call_cap,
+        "smoke_only": smoke_only,
+        "provider_diagnostics": getattr(provider, "diagnostics", []),
         "min_request_interval_seconds": getattr(provider, "min_interval_seconds", None),
         "latency_includes_rate_pacing": True,
         "synthetic_data": True, "dataset_sha256": DATA_SHA256,
@@ -87,6 +90,7 @@ def main(argv=None):
     parser.add_argument("--allow-api-calls", action="store_true")
     parser.add_argument("--confirm-free-tier", action="store_true")
     parser.add_argument("--batch", type=int, choices=(1, 2, 3, 4), default=1)
+    parser.add_argument("--smoke-only", action="store_true", help="At most two requests; no evaluated cases")
     parser.add_argument("--output-dir", required=True)
     args = parser.parse_args(argv)
     if not args.allow_api_calls or not args.confirm_free_tier:
@@ -94,7 +98,7 @@ def main(argv=None):
     try:
         provider = GeminiProvider()
         summary = execute(Path(__file__).parents[1] / "data/cases.jsonl", args.output_dir,
-                          provider, args.batch, confirm_free_tier=True)
+                          provider, args.batch, confirm_free_tier=True, smoke_only=args.smoke_only)
     except (ProviderError, ValueError, OSError):
         print("Setup failed. Check the Gemini secret, synthetic fixtures and output directory privately. No secrets logged.")
         return 2

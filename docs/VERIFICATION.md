@@ -27,3 +27,9 @@ October 24, 2026: added the Gemini adapter and a separate manual workflow withou
 The runner uses a fixed `gemini-2.5-flash-lite` model, five development cases per batch, and at most 17 API attempts including smoke testing and both evaluation modes. Four disjoint batches cover the 20 development cases; no live evaluation of the test split has occurred. The code has no paid fallback, retry, or billing configuration mechanism. The operator must confirm the key belongs to a Free Tier project with billing disabled; code does not verify account billing status. Rate-limit pacing is included in reported latency.
 
 At this verification point, `GEMINI_API_KEY` is not configured in the local runtime, and no Gemini response or accuracy result has been verified. The adapter's HTTP contract and safety behavior are only covered by offline tests until the first real run succeeds. Do not present the 78 passing tests as LLM performance.
+
+## First Gemini attempt and diagnostic hardening
+
+October 24, 2026: the secret was configured in GitHub Actions, not the local runtime. [Run 40084117530](https://github.com/schen0320/ThreadGuard/actions/runs/40084117530), at source commit `ef1bdafe2435b299425b5f043412f973817724e2`, passed all 78 offline tests but failed on its first smoke request. It stopped after one API attempt with no verified model output or token usage. The baseline, failed smoke and summary artifacts are preserved by that run. Its overly broad error redaction does not establish whether the cause was access, request format, quota, network or response parsing.
+
+Added opt-in smoke-only execution (maximum two requests) and bounded HTTP diagnostics that return only integer status codes and fixed allowlisted labels. Raw errors, headers, credentials and server messages are never exported. No retry, paid fallback or permission/billing changes are introduced. These changes enable diagnosis; they do not themselves establish working inference.
