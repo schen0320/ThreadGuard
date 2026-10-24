@@ -1,0 +1,650 @@
+{
+  "created_at": "2026-10-24T09:10:54.453328+00:00",
+  "provider": "keyword-baseline-NOT-LLM",
+  "model": "keyword-v1",
+  "mode": "single",
+  "split": "dev",
+  "policy_version": "threadguard-demo-v1",
+  "policy_sha256": "7b1961cc993a7452805909c79c4127bff6a5e295583c865f7a3d42940bb3119e",
+  "dataset_sha256": "c147cdbd414ae81d6a8b26d156179f33753440c9ddd9c6d74b5f336ffd9f32bb",
+  "synthetic_data": true,
+  "live_llm_evaluation": false,
+  "warning": "Small AI-assisted synthetic set, not a blind or production benchmark. Review labels with a human. Same-model passes have correlated errors.",
+  "metrics": {
+    "n": 20,
+    "accuracy_including_review": 0.65,
+    "flag_precision_known_labels": 0.7778,
+    "flag_recall": 0.875,
+    "false_positive_rate": 0.25,
+    "flag_or_review_capture_on_violations": 0.875,
+    "review_rate": 0.0,
+    "decisive_coverage_known_labels": 1.0,
+    "selective_accuracy_known_labels": 0.8125,
+    "provider_errors": 0,
+    "confusion_matrix": {
+      "allow": {
+        "allow": 6,
+        "flag": 2,
+        "review": 0
+      },
+      "flag": {
+        "allow": 1,
+        "flag": 7,
+        "review": 0
+      },
+      "review": {
+        "allow": 4,
+        "flag": 0,
+        "review": 0
+      }
+    },
+    "p50_latency_ms": 0.01,
+    "p95_latency_ms": 0.03
+  },
+  "tokens": {},
+  "subgroups": {
+    "ambiguity": {
+      "n": 3,
+      "accuracy_including_review": 0.0,
+      "flag_precision_known_labels": null,
+      "flag_recall": null,
+      "false_positive_rate": null,
+      "flag_or_review_capture_on_violations": null,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": null,
+      "selective_accuracy_known_labels": null,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "review": {
+          "allow": 3,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.01,
+      "p95_latency_ms": 0.01
+    },
+    "benign": {
+      "n": 1,
+      "accuracy_including_review": 1.0,
+      "flag_precision_known_labels": null,
+      "flag_recall": null,
+      "false_positive_rate": 0.0,
+      "flag_or_review_capture_on_violations": null,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 1.0,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 1,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.01,
+      "p95_latency_ms": 0.01
+    },
+    "criticism": {
+      "n": 2,
+      "accuracy_including_review": 1.0,
+      "flag_precision_known_labels": null,
+      "flag_recall": null,
+      "false_positive_rate": 0.0,
+      "flag_or_review_capture_on_violations": null,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 1.0,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 2,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.03,
+      "p95_latency_ms": 0.21
+    },
+    "harassment": {
+      "n": 2,
+      "accuracy_including_review": 1.0,
+      "flag_precision_known_labels": 1.0,
+      "flag_recall": 1.0,
+      "false_positive_rate": null,
+      "flag_or_review_capture_on_violations": 1.0,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 1.0,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 2,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.01,
+      "p95_latency_ms": 0.01
+    },
+    "out_of_scope": {
+      "n": 1,
+      "accuracy_including_review": 0.0,
+      "flag_precision_known_labels": null,
+      "flag_recall": null,
+      "false_positive_rate": null,
+      "flag_or_review_capture_on_violations": null,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": null,
+      "selective_accuracy_known_labels": null,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "review": {
+          "allow": 1,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.01,
+      "p95_latency_ms": 0.01
+    },
+    "promotion_context": {
+      "n": 1,
+      "accuracy_including_review": 1.0,
+      "flag_precision_known_labels": null,
+      "flag_recall": null,
+      "false_positive_rate": 0.0,
+      "flag_or_review_capture_on_violations": null,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 1.0,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 1,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.02,
+      "p95_latency_ms": 0.02
+    },
+    "prompt_injection": {
+      "n": 3,
+      "accuracy_including_review": 1.0,
+      "flag_precision_known_labels": 1.0,
+      "flag_recall": 1.0,
+      "false_positive_rate": 0.0,
+      "flag_or_review_capture_on_violations": 1.0,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 1.0,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 1,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 2,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.01,
+      "p95_latency_ms": 0.01
+    },
+    "quotation": {
+      "n": 2,
+      "accuracy_including_review": 0.0,
+      "flag_precision_known_labels": 0.0,
+      "flag_recall": null,
+      "false_positive_rate": 1.0,
+      "flag_or_review_capture_on_violations": null,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 0.0,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 0,
+          "flag": 2,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.02,
+      "p95_latency_ms": 0.02
+    },
+    "spam": {
+      "n": 2,
+      "accuracy_including_review": 1.0,
+      "flag_precision_known_labels": 1.0,
+      "flag_recall": 1.0,
+      "false_positive_rate": null,
+      "flag_or_review_capture_on_violations": 1.0,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 1.0,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 2,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.01,
+      "p95_latency_ms": 0.01
+    },
+    "threat": {
+      "n": 1,
+      "accuracy_including_review": 1.0,
+      "flag_precision_known_labels": 1.0,
+      "flag_recall": 1.0,
+      "false_positive_rate": null,
+      "flag_or_review_capture_on_violations": 1.0,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 1.0,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 0,
+          "flag": 1,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.01,
+      "p95_latency_ms": 0.01
+    },
+    "zh": {
+      "n": 2,
+      "accuracy_including_review": 0.5,
+      "flag_precision_known_labels": null,
+      "flag_recall": 0.0,
+      "false_positive_rate": 0.0,
+      "flag_or_review_capture_on_violations": 0.0,
+      "review_rate": 0.0,
+      "decisive_coverage_known_labels": 1.0,
+      "selective_accuracy_known_labels": 0.5,
+      "provider_errors": 0,
+      "confusion_matrix": {
+        "allow": {
+          "allow": 1,
+          "flag": 0,
+          "review": 0
+        },
+        "flag": {
+          "allow": 1,
+          "flag": 0,
+          "review": 0
+        },
+        "review": {
+          "allow": 0,
+          "flag": 0,
+          "review": 0
+        }
+      },
+      "p50_latency_ms": 0.01,
+      "p95_latency_ms": 0.02
+    }
+  },
+  "cases": [
+    {
+      "id": "tg001",
+      "gold": "allow",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.21,
+      "tags": [
+        "criticism"
+      ],
+      "input_sha256": "66d60ce6a138fa66be19785983bf437565198c7e08da21a6fcdedaa58d5000e5",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg002",
+      "gold": "allow",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.03,
+      "tags": [
+        "criticism"
+      ],
+      "input_sha256": "973e7ecc7ac767cb6f4f28edcf0689bb32a98178ed070f98ad335af9966af872",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg003",
+      "gold": "allow",
+      "prediction": "flag",
+      "category": "harassment",
+      "status": "ok",
+      "latency_ms": 0.02,
+      "tags": [
+        "quotation"
+      ],
+      "input_sha256": "6ca0231444f9408b843223c9d39206c8c5ed1003b0c6ad3a76be2357a2aeb2f0",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg004",
+      "gold": "allow",
+      "prediction": "flag",
+      "category": "spam",
+      "status": "ok",
+      "latency_ms": 0.02,
+      "tags": [
+        "quotation"
+      ],
+      "input_sha256": "dbdb518bd85d31678a4d1ed1aa6290aca2dd819dd9b906914372e008c1f62ce1",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg005",
+      "gold": "allow",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "benign"
+      ],
+      "input_sha256": "ad2f251404e40183918876ee415ffbbd1c4a7f89a739d9a96851b1872e3c55ad",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg006",
+      "gold": "allow",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.02,
+      "tags": [
+        "promotion_context"
+      ],
+      "input_sha256": "da10be8c7557d4ad52c7a2962a7a3873b1204892663eeef99507954fb0bb251a",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg007",
+      "gold": "allow",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.02,
+      "tags": [
+        "zh"
+      ],
+      "input_sha256": "6f3cfd8150e73c0716f438bb87800a63626d04712287618d176622fd7ed6e5a6",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg008",
+      "gold": "allow",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "prompt_injection"
+      ],
+      "input_sha256": "51beb385d0fa92359bbfc70a2497ed8b0297bb84c67b7646f95cf5830d5d4278",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg009",
+      "gold": "flag",
+      "prediction": "flag",
+      "category": "spam",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "spam"
+      ],
+      "input_sha256": "4abd0c865fcc68cf1cc49f47a54dd53d68de78395deb09ca29136de782d72e37",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg010",
+      "gold": "flag",
+      "prediction": "flag",
+      "category": "spam",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "spam"
+      ],
+      "input_sha256": "6baf2b840d3b4864e59800d7d0e45948f4eb3c540f9fef7bab23441f0e2a7deb",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg011",
+      "gold": "flag",
+      "prediction": "flag",
+      "category": "harassment",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "harassment"
+      ],
+      "input_sha256": "b7baca62a6506a7080a16140c5133cfe736d357625f2c1a606835f48a14c1202",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg012",
+      "gold": "flag",
+      "prediction": "flag",
+      "category": "harassment",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "harassment"
+      ],
+      "input_sha256": "3179f7aba4c2bc54d00476c605ebf7656383df75d343eed549308b1769537258",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg013",
+      "gold": "flag",
+      "prediction": "flag",
+      "category": "threat",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "threat"
+      ],
+      "input_sha256": "4c97279f2eb6dee96e7e5cb9af6a295988462b848a9cba911a0d5d99e28a232a",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg014",
+      "gold": "flag",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "zh"
+      ],
+      "input_sha256": "d4e21e811a2507602286dfb81f48cdd816e487c06f8021bc895d55f4b886ecad",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg015",
+      "gold": "flag",
+      "prediction": "flag",
+      "category": "harassment",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "prompt_injection"
+      ],
+      "input_sha256": "1c39cba4f4c5b2a11792e2a34fbb8fe2b6d4c215f71f445137a65b6500ba80bc",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg016",
+      "gold": "flag",
+      "prediction": "flag",
+      "category": "spam",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "prompt_injection"
+      ],
+      "input_sha256": "4c4ddf0d688115db44c4da4e9e5b96f95ec24ffd82484a302996bf3d5cf556fa",
+      "reason": "Keyword baseline match; context is not understood."
+    },
+    {
+      "id": "tg017",
+      "gold": "review",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "ambiguity"
+      ],
+      "input_sha256": "b1d9e9e458fc75fae5b82c9266f1c0805831d8097f79f0d9f11c75eab0c7acad",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg018",
+      "gold": "review",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "ambiguity"
+      ],
+      "input_sha256": "cfef6b8ccece29e5162ce96e81b610916e5c9aeedd10c39611716feb7a16579f",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg019",
+      "gold": "review",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "out_of_scope"
+      ],
+      "input_sha256": "a7784adc5fdc9311e64b1e3b1565cfac7337cbc8eca773b6d95512b75052c07a",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    },
+    {
+      "id": "tg020",
+      "gold": "review",
+      "prediction": "allow",
+      "category": "none",
+      "status": "ok",
+      "latency_ms": 0.01,
+      "tags": [
+        "ambiguity"
+      ],
+      "input_sha256": "3a7f5b1e1a5a13139bc891f7be4c22a91b0cf3979471fa0fa6e549697e090c15",
+      "reason": "No baseline keywords matched. This is not a safety guarantee."
+    }
+  ]
+}
