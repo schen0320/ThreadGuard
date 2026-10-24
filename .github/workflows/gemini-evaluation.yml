@@ -1,0 +1,51 @@
+name: Manual Gemini free-tier evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_free_tier:
+        description: 'I verified GEMINI_API_KEY belongs to a Free Tier project with billing disabled; allow synthetic data to Google'
+        type: boolean
+        required: true
+        default: false
+      batch:
+        description: 'Development batch: five cases, at most 17 requests. Check remaining project quota first.'
+        type: choice
+        options: ['1', '2', '3', '4']
+        required: true
+        default: '1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: threadguard-gemini-evaluation
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    if: ${{ inputs.confirm_free_tier && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run offline tests first
+        run: python -m unittest discover -s tests -v
+      - name: Gemini smoke test and development batch
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          EVAL_BATCH: ${{ inputs.batch }}
+        run: python -m threadguard.gemini_eval --allow-api-calls --confirm-free-tier --batch "$EVAL_BATCH" --output-dir reports/local-gemini
+      - name: Save reports, including partial failures
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: threadguard-gemini-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/local-gemini/*.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -4,7 +4,7 @@ A small LLM moderation workflow for discussion posts. It assesses spam, harassme
 
 ## Status
 
-Version 0.1 implements a Responses API adapter, bounded two-pass assessment, strict local validation, a keyword baseline and an evaluation harness. The project was developed with Codex assistance. **Live LLM inference has not been verified in the creation environment.** No API credential was configured, no paid model calls were made, and there is no claimed LLM accuracy or production deployment. Offline engineering tests and keyword-baseline results are distinct from model performance.
+Version 0.2 implements OpenAI and Gemini API adapters, bounded two-pass assessment, strict local validation, a keyword baseline and an evaluation harness. The project was developed with Codex assistance. **Live LLM inference has not been verified in the creation environment.** No API credential was configured, no model calls were made, and there is no claimed LLM accuracy or production deployment. Offline engineering tests and keyword-baseline results are distinct from model performance.
 
 ## Run without credentials
 
@@ -20,7 +20,29 @@ The baseline is deliberately weak. It misses paraphrases and Chinese text and ov
 
 ## Run the real LLM workflow
 
-### Manual GitHub evaluation
+### Gemini free-tier evaluation (recommended first)
+
+The [manual Gemini workflow](https://github.com/schen0320/ThreadGuard/actions/workflows/gemini-evaluation.yml) uses `gemini-2.5-flash-lite`, which Google's pricing page lists as free for input and output **on the Free Tier**, checked October 24, 2026. This is not a promise that every API key is free: the same model can incur charges on a paid project. The code cannot inspect or enforce your project's billing tier.
+
+1. Open [Google AI Studio API keys](https://aistudio.google.com/apikey) and use a project showing **Free Tier**, with billing disabled. Do not link billing or buy credits for this demo. Check the project's remaining requests-per-minute/day limits in AI Studio.
+2. Add its key directly to [GitHub Actions repository secrets](https://github.com/schen0320/ThreadGuard/settings/secrets/actions/new), named `GEMINI_API_KEY`. Never paste the value into chat, code, workflow inputs, or a URL.
+3. Open the Gemini workflow, choose `main`, confirm that the key's project is Free Tier with billing disabled, select batch `1`, and run. This sends only the supplied synthetic examples and policy to Google. Free-tier content may be used to improve Google's products. Repository logs/artifacts may be public.
+
+Each run compares the keyword baseline, single-pass LLM, and two-pass LLM on the same five development cases, after a two-request smoke test. There are **at most 17 API attempts per batch**, 1200 maximum output tokens per request, and at least 15 seconds between request starts. No retries, safety-filter overrides, billing changes, or paid-provider fallback are implemented. A quota, authentication, refusal, or validation error stops the run and preserves partial reports. The manual workflow only runs trusted `main` code and exposes the key only to its inference step.
+
+Batches 1 through 4 cover all 20 development cases without overlap; the test split stays untouched. Check remaining quota before each batch, and wait for quota reset if needed. Do not assume that all four batches fit the same day's allowance. Google's quotas are project-level and may vary; daily quotas reset at midnight Pacific time. A five-case result is a smoke-scale evaluation, not a useful accuracy benchmark. Record all batches, including failures, before making any broader comparison, and pool per-case results rather than averaging subgroup percentages. Do not change the model or policy between batches.
+
+Equivalent local command after securely configuring `GEMINI_API_KEY`:
+
+```sh
+python -m threadguard.gemini_eval --allow-api-calls --confirm-free-tier --batch 1 --output-dir reports/local-gemini-batch1
+```
+
+Use a fresh output directory for each run. The runner pins the synthetic fixture file's SHA-256 to prevent accidental submission of replacement/private data. The reports distinguish an operator's billing-tier confirmation from code verification (which is not available). Latency includes deliberate rate-limit pacing and must not be advertised as model-only latency. Token observations are not a billing ledger. No successful live run is claimed until actual responses are verified.
+
+References: [Google pricing](https://ai.google.dev/gemini-api/docs/pricing), [billing tiers](https://ai.google.dev/gemini-api/docs/billing), [rate limits](https://ai.google.dev/gemini-api/docs/rate-limits), and [structured-output REST contract](https://ai.google.dev/gemini-api/docs/generate-content/structured-output).
+
+### Optional paid OpenAI evaluation (unchanged)
 
 The [manual live workflow](https://github.com/schen0320/ThreadGuard/actions/workflows/live-evaluation.yml) is ready for configuration. Add an OpenAI project API key directly as the repository Actions secret `OPENAI_API_KEY`; never send the key through chat. The secret is only exposed to the live-evaluation step, not checkout or offline tests. Only run trusted code from `main`.
 

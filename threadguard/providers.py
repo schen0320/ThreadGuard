@@ -1,7 +1,8 @@
-"""Real Responses API adapter and an explicitly non-LLM demonstration baseline."""
+"""Real API adapters and an explicitly non-LLM demonstration baseline."""
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 from .core import POLICY, SCHEMA
@@ -79,6 +80,89 @@ class OpenAIProvider:
                 return self.parse(json.loads(raw))
         except Exception:
             raise ProviderError("API request failed; check access, model, network and billing privately") from None
+
+
+class GeminiProvider:
+    """Fixed free-tier-eligible model; the caller must verify the project's tier.
+
+    There is no API request flag that makes a paid project's calls free.
+    Use the bounded gemini_eval runner, not this adapter directly, for the demo.
+    """
+    name = "gemini-live"
+    model = "gemini-2.5-flash-lite"
+    min_interval_seconds = 15
+
+    def __init__(self, key=None):
+        self._key = key or os.environ.get("GEMINI_API_KEY", "")
+        if not self._key:
+            raise ProviderError("Configure GEMINI_API_KEY securely; do not paste keys into chat.")
+        self._last_started = None
+
+    def request_body(self, post, stage):
+        instruction = POLICY
+        if stage == "reviewer":
+            instruction += "\nMake a fresh assessment. Pay particular attention to quotation, missing context, promotional relevance, and false positives."
+        return {
+            "systemInstruction": {"parts": [{"text": instruction}]},
+            "contents": [{"role": "user", "parts": [{"text": json.dumps(
+                {"target": post.target, "context": post.context}, ensure_ascii=False)}]}],
+            "generationConfig": {
+                "candidateCount": 1, "maxOutputTokens": 1200, "temperature": 0,
+                "thinkingConfig": {"thinkingBudget": 0},
+                "responseFormat": {"text": {"mimeType": "APPLICATION_JSON", "schema": SCHEMA}},
+            },
+        }
+
+    @staticmethod
+    def parse(data):
+        if not isinstance(data, dict) or data.get("error"):
+            raise ProviderError("invalid response")
+        if data.get("promptFeedback", {}).get("blockReason"):
+            raise ProviderError("prompt blocked")
+        candidates = data.get("candidates", [])
+        if not isinstance(candidates, list) or len(candidates) != 1:
+            raise ProviderError("expected one candidate")
+        candidate = candidates[0]
+        if candidate.get("finishReason") != "STOP":
+            raise ProviderError("blocked or incomplete response")
+        if any(r.get("blocked") for r in candidate.get("safetyRatings", [])):
+            raise ProviderError("candidate blocked")
+        parts = candidate.get("content", {}).get("parts", [])
+        if not isinstance(parts, list) or len(parts) != 1:
+            raise ProviderError("expected one text part")
+        part = parts[0]
+        if (not isinstance(part, dict) or not isinstance(part.get("text"), str)
+                or not part["text"] or part.get("thought")
+                or set(part) - {"text", "thought", "thoughtSignature"}):
+            raise ProviderError("unexpected output type")
+        raw_usage = data.get("usageMetadata", {})
+        fields = {"promptTokenCount": "input_tokens", "candidatesTokenCount": "output_tokens",
+                  "totalTokenCount": "total_tokens"}
+        usage = {dest: raw_usage[src] for src, dest in fields.items()
+                 if type(raw_usage.get(src)) is int and raw_usage[src] >= 0}
+        return {"decision": json.loads(part["text"]), "usage": usage}
+
+    def classify(self, post, stage):
+        # No credentials in the URL/body, no tools, no safety overrides or fallback.
+        request = urllib.request.Request(
+            "https://generativelanguage.googleapis.com/v1beta/models/" + self.model + ":generateContent",
+            data=json.dumps(self.request_body(post, stage)).encode(),
+            headers={"Content-Type": "application/json", "x-goog-api-key": self._key}, method="POST",
+        )
+        try:
+            if self._last_started is not None:
+                remaining = self.min_interval_seconds - (time.monotonic() - self._last_started)
+                if remaining > 0:
+                    time.sleep(remaining)
+            self._last_started = time.monotonic()
+            # No retry, including HTTP 429. Respect project quota; never enable billing.
+            with urllib.request.build_opener(NoRedirect()).open(request, timeout=40) as response:
+                raw = response.read(1_000_001)
+                if len(raw) > 1_000_000:
+                    raise ProviderError("oversized response")
+                return self.parse(json.loads(raw))
+        except Exception:
+            raise ProviderError("Gemini request failed; check key access, model, quota and network privately") from None
 
 
 class KeywordBaseline:
