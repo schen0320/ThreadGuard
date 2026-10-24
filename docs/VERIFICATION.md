@@ -10,7 +10,7 @@ Initial local verification: October 24, 2026. Environment: Python 3.12, local Co
 
 ## Not completed
 
-* No real LLM requests, token bill, latency benchmark or LLM accuracy measurement.
+* No successful real LLM response, token bill, latency benchmark or LLM accuracy measurement. Failed API attempts are recorded below.
 * No model comparison, prompt improvement validated on unseen data, or production traffic.
 * No public application deployment. Repository publication does not deploy a service or run live model inference.
 
@@ -33,3 +33,5 @@ At this verification point, `GEMINI_API_KEY` is not configured in the local runt
 October 24, 2026: the secret was configured in GitHub Actions, not the local runtime. [Run 40084117530](https://github.com/schen0320/ThreadGuard/actions/runs/40084117530), at source commit `ef1bdafe2435b299425b5f043412f973817724e2`, passed all 78 offline tests but failed on its first smoke request. It stopped after one API attempt with no verified model output or token usage. The baseline, failed smoke and summary artifacts are preserved by that run. Its overly broad error redaction does not establish whether the cause was access, request format, quota, network or response parsing.
 
 Added opt-in smoke-only execution (maximum two requests) and bounded HTTP diagnostics that return only integer status codes and fixed allowlisted labels. Raw errors, headers, credentials and server messages are never exported. No retry, paid fallback or permission/billing changes are introduced. These changes enable diagnosis; they do not themselves establish working inference.
+
+[Diagnostic run 40084481562](https://github.com/schen0320/ThreadGuard/actions/runs/40084481562), at commit `79cea7f278b8b2bcace3b7c24f90e7a6d89a2ce9`, passed **82 offline tests**, then stopped after one smoke request with HTTP **404 / NOT_FOUND** for the configured `gemini-2.5-flash-lite:generateContent` endpoint. The original raw server message was not exported. This establishes an unavailable requested resource for that request, not the precise reason, global model retirement, or successful credential validation. No model response or live accuracy was verified. Both runs stopped after one attempt each; no other evaluation batches were launched. No paid fallback or billing change was made. Further live execution is paused pending secure credential replacement and model availability verification.
