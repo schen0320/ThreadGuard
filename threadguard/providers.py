@@ -19,24 +19,31 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 class OpenAIProvider:
     name = "openai-live"
 
-    def __init__(self, model=None, key=None):
+    def __init__(self, model=None, key=None, reasoning_effort=None):
         self.model = model or os.environ.get("OPENAI_MODEL", "")
         self._key = key or os.environ.get("OPENAI_API_KEY", "")
         if not self._key or not self.model:
             raise ProviderError("Configure OPENAI_API_KEY and OPENAI_MODEL securely; do not paste keys into chat.")
+        self.reasoning_effort = reasoning_effort or os.environ.get("OPENAI_REASONING_EFFORT", "")
+        if self.reasoning_effort not in ("", "none", "low", "medium", "high", "xhigh", "max"):
+            raise ProviderError("Invalid reasoning effort")
 
     def request_body(self, post, stage):
         instruction = POLICY
         if stage == "reviewer":
             instruction += "\nMake a fresh assessment. Pay particular attention to quotation, missing context, promotional relevance, and false positives."
-        return {
+        body = {
             "model": self.model, "store": False, "max_output_tokens": 1200,
+            "service_tier": "default",
             "input": [
                 {"role": "system", "content": instruction},
                 {"role": "user", "content": json.dumps({"target": post.target, "context": post.context}, ensure_ascii=False)},
             ],
             "text": {"format": {"type": "json_schema", "name": "moderation_decision", "strict": True, "schema": SCHEMA}},
         }
+        if self.reasoning_effort:
+            body["reasoning"] = {"effort": self.reasoning_effort}
+        return body
 
     @staticmethod
     def parse(data):

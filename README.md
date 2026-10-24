@@ -20,6 +20,24 @@ The baseline is deliberately weak. It misses paraphrases and Chinese text and ov
 
 ## Run the real LLM workflow
 
+### Manual GitHub evaluation
+
+The [manual live workflow](https://github.com/schen0320/ThreadGuard/actions/workflows/live-evaluation.yml) is ready for configuration. Add an OpenAI project API key directly as the repository Actions secret `OPENAI_API_KEY`; never send the key through chat. The secret is only exposed to the live-evaluation step, not checkout or offline tests. Only run trusted code from `main`.
+
+The workflow runs only when manually dispatched with paid-call consent. It uses `gpt-6-luna` with `reasoning.effort=none`, Standard processing, and 1200 maximum output tokens per call. It first makes a two-pass smoke test, then compares the keyword baseline, single-pass LLM, and two-pass LLM on the same 20 development cases. It makes at most 62 API attempts, does not retry, stops at the first provider/validation error, and never touches the test split. Reports are uploaded as GitHub Actions artifacts, including partial failures. No results are committed automatically. Treat artifacts and logs in this public repository as potentially visible to others; use only the supplied synthetic inputs.
+
+Model documentation checked October 24, 2026 lists GPT-6 Luna Standard pricing as $0.10 per million input tokens and $0.50 per million output tokens. The 62-call output ceiling is 74,400 tokens, approximately $0.0372 in output charges at those rates; input tokens and any applicable premiums are additional. This is a request/token bound, not an account-level hard dollar cap. Check billing and model access before approving a run. See the [official model page](https://developers.openai.com/api/docs/models/gpt-6-luna), [API quickstart](https://developers.openai.com/api/docs/quickstart), and [GitHub secret documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets).
+
+Once the key is securely configured, the equivalent local command is:
+
+```sh
+python -m threadguard.live_eval --allow-api-calls --output-dir reports/local-live-001
+```
+
+The runner records model configuration, source commit when run on GitHub, response examples, metrics, and observed tokens. Missing credentials produce an error without making network requests. No live run is claimed until an actual report verifies successful API responses.
+
+### Custom local experiments
+
 Use a supported model with Responses API structured-output support. Set `OPENAI_API_KEY` and `OPENAI_MODEL` securely in your local environment or secret manager. Never commit the key, paste it into chat, put it in a URL, or include it in an application. Do not use real customer messages in this demo. The model name is intentionally explicit, not a hardcoded recommendation.
 
 ```sh

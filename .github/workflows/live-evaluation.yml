@@ -1,0 +1,44 @@
+name: Manual live LLM evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      approve_paid_calls:
+        description: 'Approve up to 62 paid OpenAI API calls on synthetic data'
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: threadguard-live-evaluation
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    if: ${{ inputs.approve_paid_calls && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run offline tests first
+        run: python -m unittest discover -s tests -v
+      - name: Live smoke test and development comparison
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python -m threadguard.live_eval --allow-api-calls --output-dir reports/local-live
+      - name: Save reports, including partial failures
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: threadguard-live-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports/local-live/*.json
+          if-no-files-found: warn
+          retention-days: 30

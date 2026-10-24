@@ -15,3 +15,7 @@ Initial local verification: October 24, 2026. Environment: Python 3.12, local Co
 * No public application deployment. Repository publication does not deploy a service or run live model inference.
 
 An API credential and a supported model must be configured securely before a live run. Check [GitHub Actions](https://github.com/schen0320/ThreadGuard/actions) for remote test results associated with each published commit. A passing offline CI run is not evidence of live model performance.
+
+## Manual live-evaluation setup
+
+October 24, 2026: added a manually triggered, secret-backed evaluation workflow and bounded runner. The expanded offline suite passes 50 tests locally, including request limits, stopping on API errors, secret-safe error reporting, credential preflight, and preserving previous reports. Its 62-call maximum includes the smoke test and both development comparisons; the test split is not used. No real model responses have been verified as part of this setup. A GitHub secret and a successful manual run are still needed.

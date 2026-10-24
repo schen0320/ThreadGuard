@@ -50,7 +50,7 @@ def metrics(rows):
     }
 
 
-def evaluate(path, split, provider, mode):
+def evaluate(path, split, provider, mode, stop_on_error=False):
     cases = load_cases(path, split)
     rows, tokens = [], Counter()
     for case in cases:
@@ -62,11 +62,16 @@ def evaluate(path, split, provider, mode):
                      "input_sha256": result["input_sha256"], "reason": result["decision"]["reason"]})
         for trace in result["traces"]:
             tokens.update(trace["usage"])
+        if stop_on_error and result["status"] != "ok":
+            break
     return {"created_at": datetime.now(timezone.utc).isoformat(), "provider": provider.name, "model": provider.model,
             "mode": mode, "split": split, "policy_version": POLICY_VERSION,
             "policy_sha256": hashlib.sha256(POLICY.encode()).hexdigest(),
             "dataset_sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest(),
-            "synthetic_data": True, "live_llm_evaluation": provider.name == "openai-live",
+            "synthetic_data": True, "live_llm_attempted": provider.name == "openai-live",
+            "live_llm_evaluation": provider.name == "openai-live" and any(r["status"] == "ok" for r in rows),
+            "expected_cases": len(cases), "completed_cases": len(rows),
+            "complete": len(rows) == len(cases) and all(r["status"] == "ok" for r in rows),
             "warning": "Small AI-assisted synthetic set, not a blind or production benchmark. Review labels with a human. Same-model passes have correlated errors.",
             "metrics": metrics(rows), "tokens": dict(tokens),
             "subgroups": {tag: metrics([r for r in rows if tag in r["tags"]]) for tag in sorted({tag for r in rows for tag in r["tags"]})},
